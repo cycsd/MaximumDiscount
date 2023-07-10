@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "MaximumDicount",
+    "productName": "MaximumDiscount",
     "version": "0.0.0"
   },
   "tauri": {
@@ -37,7 +37,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "MaximumDicount",
+        "title": "MaximumDiscount",
         "width": 1920,
         "height": 1080
       }
