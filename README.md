@@ -4,4 +4,4 @@
 
 因此有了這個專案，希望能幫助到跟我一樣客家的人 😆 !
 
-![操作畫面](https://github.com/cycsd/MaximumDiscount/tree/main/src/assets/MaximumDiscountOperate.gif)
+![操作畫面](https://github.com/cycsd/MaximumDiscount/blob/main/src/assets/MaximumDiscountOperate.gif)
