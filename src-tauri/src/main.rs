@@ -45,7 +45,7 @@ impl Caculator for Vec<Merchandise> {
         let mut visited: HashSet<Quantities> = HashSet::new();
         let mut result: Vec<(Quantities, Price)> = vec![];
         while let Some((mut quantitiy_candidate, price)) = stack.pop() {
-            if price > minimum_threshold {
+            if price >= minimum_threshold {
                 result.push((quantitiy_candidate, price));
                 continue;
             }

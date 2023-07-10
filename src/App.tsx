@@ -77,7 +77,7 @@ function App() {
       rows=>rows.filter((r,i)=>i !==index)
     )
   }
-  const saveModified = (merchandise:Merchandise,index:number)=>{
+  const updateMerchandise = (merchandise:Merchandise,index:number)=>{
     setCandidateMerchandise(
       index,
       _=>{return {merchandise,inModifiedMode:false};},
@@ -104,14 +104,19 @@ function App() {
       }
       return modified;
     }
-    return (<div class="grid grid-cols-6 gap-4 w-3/4">
+    return (<><div class="grid grid-cols-5 gap-1 col-start-1 col-end-10">
       <input ref={inputData.name}  value={row.merchandise.name} ></input>
       <input ref={inputData.price} value={row.merchandise.price}></input>
       <input ref={inputData.amount} value={row.merchandise.amount}></input>
       <p>{row.merchandise.amount /row.merchandise.price}</p>
       <p>{row.merchandise.price /row.merchandise.amount}</p>
-      <button onclick={()=>saveModified(getModidfied(),index)}>Save</button>
-    </div>)
+      </div>
+      <div class="grid grid-cols-2 gap-1 col-start-10 col-end-13">
+      <button onclick={()=>updateMerchandise(getModidfied(),index)}>
+        <span class="material-symbols-outlined">check</span>
+      </button>
+      </div>
+    </>)
   }
 
   return (
@@ -131,52 +136,62 @@ function App() {
           placeholder="輸入總量..."
         />
 
-        <button onClick={enterMerchandise} type="button">Enter</button>
-        <button onClick={caculateDiscount} type="button">Caculate</button>
+        <button onClick={enterMerchandise} type="button">
+          <span class="material-symbols-outlined">check</span>
+        </button>
+        <button onClick={caculateDiscount} type="button">
+          <span class="material-symbols-outlined">calculate</span>
+        </button>
         <button onClick={clearMerchandise} type="button">Clear</button>
 
       </div>
       <div class="flex justify-center">
         <input
           ref={formData!.minimum_threshold_price}
-          placeholder="輸入最低限度金額..."
+          placeholder="輸入最低門檻金額..."
         />
         <input
           ref={formData!.discount}
           placeholder="輸入折扣金額..."
         />
       </div>
-      <div class="flex justify-center flex-wrap">
-      <div class="grid grid-cols-7 gap-4 w-3/4">
+      <div class="contain">
+      <div class="grid grid-cols-12 text-xl">
+      <div class="grid grid-cols-5 col-start-1 col-end-10">
         <p>商品名稱</p>
         <p>價格</p>
         <p>數量</p>
         <p>CP值</p>
         <p>$/unit</p>
       </div>
-      <div class="w-3/4">
         <For each={candidateMerchandise}>
           {(row,index) => (
             <Show when={!row.inModifiedMode}
               fallback={<ModifiedRow row={row} index={index()} />}
             >
-              <div class="grid grid-cols-7 gap-4 w-3/4">
+              <div class="grid grid-cols-5 gap-1 col-start-1 col-end-10">
                 <p>{row.merchandise.name}</p>
                 <p>{row.merchandise.price}</p>
                 <p>{row.merchandise.amount}</p>
-                <p>{row.merchandise.amount / row.merchandise.price}</p>
-                <p>{row.merchandise.price / row.merchandise.amount}</p>
-                <button onclick={()=>openModified(index())}>Modified</button>
-                <button onclick={()=>deleteRow(index())}>Delete</button>
+                <p>{(row.merchandise.amount / row.merchandise.price).toFixed(4)}</p>
+                <p>{(row.merchandise.price / row.merchandise.amount).toFixed(4)}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-1 col-start-10 col-end-13">
+                <button onclick={()=>openModified(index())}>
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button onclick={()=>deleteRow(index())}>
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
               </div>
             </Show>
           )
           }
         </For>
       </div>
-      </div>
-      <div class="flex justify-around">
-        <div class="flex justify-around w-1/2">
+      <Show when={combineList.combines.length!==0}> 
+      <div class="grid grid-cols-12 mt-5">
+        <div class="flex justify-around col-start-1 col-end-9">
         <For each={combineList.merchandises}>
           {(merchandise) => (
             <p class="text-center">{merchandise.name}</p>
@@ -184,19 +199,17 @@ function App() {
           }
         </For>
         </div>
-        <div class="flex justify-around w-1/3">
+        <div class="grid grid-cols-5 col-start-9 col-end-13">
             <p class="text-center">總量</p>
             <p class="text-center">原價</p>
             <p class="text-center">折扣後價格</p>
             <p class="text-center">CP值</p>
             <p class="text-center">/Unit</p>
-            </div>
-      </div>
-      <div >
+        </div>
         <For each={combineList.combines}>
           {(combine) => (
-          <div class="flex justify-around">
-          <div class="flex justify-around w-1/2">
+          <>
+          <div class="flex justify-around col-start-1 col-end-9">
             <For each={combine.quantities_combine}>
               {(quantity) => (
                 <p class="text-center">{quantity}</p>
@@ -204,17 +217,19 @@ function App() {
               }
             </For>
             </div>
-            <div class="flex justify-around w-1/3">
+            <div class="grid grid-cols-5 justify-items-stretch col-start-9 col-end-13">
             <p class="text-center">{combine.total_amount}</p>
             <p class="text-center">{combine.price}</p>
             <p class="text-center">{combine.discount_price}</p>
             <p class="text-center">{combine.cost_performance_ratio.toFixed(4)}</p>
             <p class="text-center">{combine.cost_per_unit.toFixed(4)}</p>
             </div>
-          </div>
+          </>
           )
           }
         </For>
+      </div>         
+      </Show>
       </div>
     </>
   );
