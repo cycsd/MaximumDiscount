@@ -2,6 +2,7 @@ import { For, Show, createResource, createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
+import { open, save } from '@tauri-apps/api/dialog';
 import { create } from "domain";
 
 interface Merchandise {
@@ -45,12 +46,49 @@ function App() {
     merchandises: [], combines: [], minimum_threshold: 0, discount: 0
   });
 
-  const caculateDiscount = async () => {
-    const dto: MerchandiseDTO = {
+  const [importPath,setImportPath] = createSignal<string | undefined>();
+  const [exportPath,setExportPath] = createSignal("");
+  const openMerchandiseFile = async ()=>{
+    const selectedFilePath = await open(
+        {
+          filters:[{
+            name: 'txt',
+            extensions: ['txt','md']
+          }],
+        }
+    );
+    if (selectedFilePath !==null){
+      setImportPath(selectedFilePath as string);
+      const merDto = await invoke<MerchandiseDTO>('import_merchandise',{filePath:importPath()});
+      setCandidateMerchandise(merDto.merchandises.map((mer)=>{return{merchandise:mer,inModifiedMode:false};}))
+      formData.minimum_threshold_price.value = merDto.minimum_threshold.toString();
+      formData.discount.value = merDto.discount.toString();
+    }
+  }
+
+  const getMerchandiseDto:()=>MerchandiseDTO = ()=>{
+    return {
       merchandises: candidateMerchandise.map(r => r.merchandise),
       minimum_threshold: parseFloat(formData.minimum_threshold_price.value),
       discount: parseFloat(formData.discount.value),
     }
+  }
+  const saveMerchandise =async ()=>{
+    const filePath = await save({
+      defaultPath:importPath(),
+      filters:[{
+        name:'txt',
+        extensions:['txt','md'],
+      }     ]
+    });
+    if (filePath !==null){
+      setExportPath(filePath as string);
+      invoke("save_merchandise",{filePath:filePath,merchandiseDto:getMerchandiseDto()})
+    }
+  }
+
+  const caculateDiscount = async () => {
+    const dto = getMerchandiseDto();
     const combines = await invoke<CombineList>("max_discount", { merchandiseDto: dto });
     setCombineList(combines);
   }
@@ -122,6 +160,12 @@ function App() {
   return (
     <>
       <h1>Max Your Discount!</h1>
+      <div>
+        <button onclick={openMerchandiseFile} type="button">Import</button>
+        <span>{importPath()}</span>
+        <button onclick={saveMerchandise} type="button">Export</button>
+        <span>{exportPath()}</span>
+      </div>
       <div class="flex justify-center">
         <div>
           <label>商品名稱:</label>

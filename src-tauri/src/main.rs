@@ -20,7 +20,7 @@ struct MerchandiseDTO {
 }
 #[derive(Deserialize, Serialize, Debug, Default)]
 struct Combine {
-    total_amount:i32,
+    total_amount: i32,
     price: Price,
     discount_price: Price,
     quantities_combine: Quantities,
@@ -73,7 +73,7 @@ impl Caculator for Vec<Merchandise> {
                     .sum::<i32>() as f64;
                 let discount_price = price - discount;
                 Combine {
-                    total_amount:total_amount as i32,
+                    total_amount: total_amount as i32,
                     price,
                     discount_price,
                     quantities_combine: quantities,
@@ -102,10 +102,28 @@ fn max_discount(merchandise_dto: MerchandiseDTO) -> CombineList {
     }
 }
 
+#[tauri::command]
+fn save_merchandise(file_path: &str, merchandise_dto: MerchandiseDTO) -> Result<(), String> {
+    std::fs::write(
+        file_path,
+        serde_json::to_string_pretty(&merchandise_dto).unwrap(),
+    )
+    .map_err(|err| err.to_string())
+}
+#[tauri::command]
+fn import_merchandise(file_path: &str) -> Result<MerchandiseDTO, String> {
+    std::fs::read_to_string(file_path)
+        .map_err(|err| err.to_string())
+        .and_then(|st| serde_json::from_str::<MerchandiseDTO>(&st).map_err(|err| err.to_string()))
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            max_discount])
+            max_discount,
+            save_merchandise,
+            import_merchandise
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
